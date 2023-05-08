@@ -1,0 +1,80 @@
+name: Pull Request Check
+on:
+  pull_request:
+    branches: [ master ]
+  push:
+    branches: [ master ] 
+
+jobs:
+  format:
+    if: github.event.pull_request.draft == false
+    name: Code Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Update submodules
+        id: update
+        run: git submodule update --remote --recursive
+      - uses: actions-rs/toolchain@v1
+      - run: rustup component add rustfmt
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  clippy:
+      if: github.event.pull_request.draft == false
+      name: Clippy Check
+      runs-on: ubuntu-latest
+
+      steps:
+        - uses: actions/checkout@v2
+          with:
+            submodules: recursive
+        - name: Update submodules
+          id: update
+          run: git submodule update --remote --recursive
+        - uses: actions-rs/toolchain@v1
+        - run: rustup component add clippy
+        - uses: actions-rs/cargo@v1
+          with:
+            command: clippy
+            args: --workspace --all-features
+
+  testcov:
+    if: github.event.pull_request.draft == false
+    name: Test Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Update submodules
+        id: update
+        run: git submodule update --remote --recursive
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2022-11-14
+          override: true
+      - name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --release --all-features --workspace --no-fail-fast
+        env:
+          CARGO_INCREMENTAL: '0'
+          RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
+          RUSTDOCFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
+      - id: coverage
+        uses: actions-rs/grcov@v0.1
+        with:
+          config: configs/grcov.yml
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ steps.coverage.outputs.report }}
