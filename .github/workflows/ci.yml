@@ -66,6 +66,9 @@ jobs:
         with:
           toolchain: nightly-2022-11-14
           override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clean
       - name: Test
         uses: actions-rs/cargo@v1
         with:
@@ -78,7 +81,7 @@ jobs:
       - id: coverage
         uses: actions-rs/grcov@v0.1
         with:
-          config: .github/configs/grcov.yml
+          config: configs/grcov.yml
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         with:
