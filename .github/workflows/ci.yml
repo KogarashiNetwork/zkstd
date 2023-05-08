@@ -19,6 +19,9 @@ jobs:
         id: update
         run: git submodule update --remote --recursive
       - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2022-11-14
+          override: true
       - run: rustup component add rustfmt
       - uses: actions-rs/cargo@v1
         with:
@@ -38,6 +41,9 @@ jobs:
           id: update
           run: git submodule update --remote --recursive
         - uses: actions-rs/toolchain@v1
+          with:
+            toolchain: nightly-2022-11-14
+            override: true
         - run: rustup component add clippy
         - uses: actions-rs/cargo@v1
           with:
@@ -64,7 +70,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --release --all-features --workspace --no-fail-fast
+          args: --release --all-features --no-fail-fast
         env:
           CARGO_INCREMENTAL: '0'
           RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests'
@@ -72,7 +78,7 @@ jobs:
       - id: coverage
         uses: actions-rs/grcov@v0.1
         with:
-          config: configs/grcov.yml
+          config: .github/configs/grcov.yml
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         with:
