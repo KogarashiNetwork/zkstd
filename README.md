@@ -1,5 +1,5 @@
-#Crypto
-[![CI](https://github.com/KogarashiNetwork/core/actions/workflows/ci.yml/badge.svg)](https://github.com/KogarashiNetwork/core/actions/workflows/ci.yml) # Crypto [![crates.io badge](https://img.shields.io/crates/v/zero-crypto.svg)](https://crates.io/crates/zero-crypto) [GitHub license](https://img.shields.io/badge/license-GPL3%2FApache2-blue)](#LICENSE) [![codecov](https://codecov.io/gh/KogarashiNetwork/core/branch/master/graph/badge.svg?token=801ESOH5ZV)](https://codecov.io/gh/KogarashiNetwork/core)
+# Crypto
+[![CI](https://github.com/KogarashiNetwork/core/actions/workflows/ci.yml/badge.svg)](https://github.com/KogarashiNetwork/core/actions/workflows/ci.yml) [![crates.io badge](https://img.shields.io/crates/v/zero-crypto.svg)](https://crates.io/crates/zero-crypto) [GitHub license](https://img.shields.io/badge/license-GPL3%2FApache2-blue)](#LICENSE) [![codecov](https://codecov.io/gh/KogarashiNetwork/core/branch/master/graph/badge.svg?token=801ESOH5ZV)](https://codecov.io/gh/KogarashiNetwork/core)
 
 This crate provides basic cryptographic implementation as in `Field`, `Curve` and `Pairing`, `Fft`, `Kzg`, and also supports fully `no_std` and [`parity-scale-codec`](https://github.com/paritytech/parity-scale-codec).
 
