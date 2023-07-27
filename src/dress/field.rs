@@ -85,7 +85,9 @@ macro_rules! fft_field_operation {
                     res = res.square();
                     let mut tmp = res;
                     tmp *= two;
-                    res.conditional_assign(&tmp, (((by >> i) & 0x1) as u8).into());
+                    if (by >> i) & 0x1 == 1 {
+                        res = tmp
+                    }
                 }
                 res
             }
@@ -165,17 +167,6 @@ macro_rules! fft_field_operation {
             }
         }
 
-        impl subtle::ConditionallySelectable for $field {
-            fn conditional_select(a: &Self, b: &Self, choice: subtle::Choice) -> Self {
-                $field([
-                    u64::conditional_select(&a.0[0], &b.0[0], choice),
-                    u64::conditional_select(&a.0[1], &b.0[1], choice),
-                    u64::conditional_select(&a.0[2], &b.0[2], choice),
-                    u64::conditional_select(&a.0[3], &b.0[3], choice),
-                ])
-            }
-        }
-
         impl From<u64> for $field {
             fn from(val: u64) -> $field {
                 $field(from_u64(val, $r2, $p, $i))
@@ -197,8 +188,8 @@ macro_rules! fft_field_operation {
 #[macro_export]
 macro_rules! field_operation {
     ($field:ident, $p:ident, $g:ident, $e:ident, $inv:ident, $r:ident, $r2:ident, $r3:ident) => {
-        use zero_crypto::behave::*;
-        use zero_crypto::common::*;
+        use zkstd::behave::*;
+        use zkstd::common::*;
 
         ring_operation!($field, $p, $g, $e, $r2, $r3, $inv);
 
