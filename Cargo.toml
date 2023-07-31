@@ -4,8 +4,8 @@ authors = [
     'KiriosK<KiriosK@yandex.ru>'
 ]
 name = "zkstd"
-description = 'zero knowledge proof standard library'
-version = "0.0.10"
+description = 'modern crypto primitive library'
+version = "0.0.11"
 edition = "2021"
 license = "Apache-2.0"
 homepage = 'https://github.com/KogarashiNetwork/Kogarashi/'
@@ -19,10 +19,14 @@ sp-std = { version = '3.0.0', default-features = false }
 parity-scale-codec = { version = "2.0.0", default-features = false, features = ["derive"] }
 
 [dev-dependencies]
-jub-jub = { path = '../jubjub' }
-bls-12-381 = { path = '../bls12_381' }
+jub-jub = { version = '0.0.11', default-features = false }
+bls-12-381 = { version = '0.0.11', default-features = false }
 serde = { version = "1.0.102", default-features = false, features = ["derive"] }
 
 [[test]]
 name = "arithmetics"
 path = "tests/limbs.rs"
+
+[features]
+default = ["std"]
+std = ["rand_core/getrandom"]
