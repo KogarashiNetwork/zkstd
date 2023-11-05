@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! twisted_edwards_affine_group_operation {
-    ($affine:ident, $extended:ident, $range:ident, $scalar:ident, $x:ident, $y:ident) => {
+    ($affine:ident, $extended:ident, $range:ident, $scalar:ident, $x:ident, $y:ident, $d:ident) => {
         curve_arithmetic_extension!($affine, $scalar, $extended);
         impl PartialEq for $affine {
             fn eq(&self, other: &Self) -> bool {
@@ -8,10 +8,12 @@ macro_rules! twisted_edwards_affine_group_operation {
             }
         }
 
-        impl CurveGroup for $affine {
-            type Affine = $affine;
-            type Extended = $extended;
+        impl TwistedEdwardsCurve for $affine {
+            type Range = $range;
+
             type Scalar = $scalar;
+
+            const PARAM_D: $range = $d;
 
             const ADDITIVE_GENERATOR: Self = Self { x: $x, y: $y };
 
@@ -38,8 +40,26 @@ macro_rules! twisted_edwards_affine_group_operation {
                 }
             }
 
-            fn random(rand: impl RngCore) -> $extended {
-                Self::ADDITIVE_GENERATOR * $scalar::random(rand)
+            fn random(rand: impl RngCore) -> $affine {
+                (Self::ADDITIVE_GENERATOR * $scalar::random(rand)).into()
+            }
+
+            fn is_on_curve(self) -> bool {
+                if self.x.is_zero() {
+                    true
+                } else {
+                    let xx = self.x.square();
+                    let yy = self.y.square();
+                    yy == $range::one() + Self::PARAM_D * xx * yy + xx
+                }
+            }
+
+            fn get_x(&self) -> Self::Range {
+                self.x
+            }
+
+            fn get_y(&self) -> Self::Range {
+                self.y
             }
         }
     };
@@ -47,7 +67,7 @@ macro_rules! twisted_edwards_affine_group_operation {
 
 #[macro_export]
 macro_rules! twisted_edwards_extend_group_operation {
-    ($affine:ident, $extended:ident, $range:ident, $scalar:ident, $x:ident, $y:ident, $t:ident) => {
+    ($affine:ident, $extended:ident, $range:ident, $scalar:ident, $x:ident, $y:ident, $t:ident, $d:ident) => {
         curve_arithmetic_extension!($extended, $scalar, $extended);
 
         impl PartialEq for $extended {
@@ -56,10 +76,11 @@ macro_rules! twisted_edwards_extend_group_operation {
             }
         }
 
-        impl CurveGroup for $extended {
-            type Affine = $affine;
-            type Extended = $extended;
+        impl TwistedEdwardsCurve for $extended {
+            type Range = $range;
             type Scalar = $scalar;
+
+            const PARAM_D: $range = $d;
 
             const ADDITIVE_GENERATOR: Self = Self {
                 x: $x,
@@ -97,6 +118,23 @@ macro_rules! twisted_edwards_extend_group_operation {
 
             fn random(rand: impl RngCore) -> Self {
                 Self::ADDITIVE_GENERATOR * $scalar::random(rand)
+            }
+
+            fn is_on_curve(self) -> bool {
+                if self.z.is_zero() {
+                    true
+                } else {
+                    let affine = $affine::from(self);
+                    affine.is_on_curve()
+                }
+            }
+
+            fn get_x(&self) -> Self::Range {
+                self.x
+            }
+
+            fn get_y(&self) -> Self::Range {
+                self.y
             }
         }
 

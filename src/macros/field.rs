@@ -146,6 +146,26 @@ macro_rules! fft_field_operation {
                 ))
             }
 
+            fn from_hash(hash: &[u8; 64]) -> Self {
+                let d0 = Self([
+                    u64::from_le_bytes(hash[0..8].try_into().unwrap()),
+                    u64::from_le_bytes(hash[8..16].try_into().unwrap()),
+                    u64::from_le_bytes(hash[16..24].try_into().unwrap()),
+                    u64::from_le_bytes(hash[24..32].try_into().unwrap()),
+                ]);
+                let d1 = Self([
+                    u64::from_le_bytes(hash[32..40].try_into().unwrap()),
+                    u64::from_le_bytes(hash[40..48].try_into().unwrap()),
+                    u64::from_le_bytes(hash[48..56].try_into().unwrap()),
+                    u64::from_le_bytes(hash[56..64].try_into().unwrap()),
+                ]);
+                d0 * Self($r2) + d1 * Self($r3)
+            }
+
+            fn to_raw_bytes(&self) -> [u8; 32] {
+                self.to_bytes()
+            }
+
             fn reduce(&self) -> Self {
                 Self(mont(
                     [self.0[0], self.0[1], self.0[2], self.0[3], 0, 0, 0, 0],
@@ -160,9 +180,6 @@ macro_rules! fft_field_operation {
 
             fn mod_2_pow_k(&self, k: u8) -> u8 {
                 (self.0[0] & ((1 << k) - 1)) as u8
-            }
-            fn mod_by_window(&self, c: usize) -> u64 {
-                self.0[0] % (1 << c)
             }
 
             fn mods_2_pow_k(&self, w: u8) -> i8 {
@@ -191,7 +208,7 @@ macro_rules! fft_field_operation {
 #[macro_export]
 macro_rules! field_operation {
     ($field:ident, $p:ident, $g:ident, $e:ident, $inv:ident, $r:ident, $r2:ident, $r3:ident) => {
-        use zkstd::behave::*;
+        use zkstd::common::*;
         use zkstd::common::*;
 
         ring_operation!($field, $p, $g, $e, $r2, $r3, $inv);

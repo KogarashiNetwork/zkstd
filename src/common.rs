@@ -1,10 +1,8 @@
 //! export necessary traits for crypto Substrate compatible.
-extern crate alloc;
 
-pub use super::behave::*;
+pub use super::traits::*;
 pub use crate::arithmetic::utils::*;
-pub use crate::dress::curve::{curve_arithmetic_extension, mixed_curve_operations};
-pub use alloc::boxed::Box;
+pub use crate::macros::curve::{curve_arithmetic_extension, mixed_curve_operations};
 pub use core::{
     cmp::Ordering,
     fmt::{Debug, Display, Formatter, LowerHex, Result as FmtResult},

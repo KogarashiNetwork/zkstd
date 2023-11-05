@@ -1,18 +1,13 @@
-use core::{
-    fmt::Debug,
-    iter::{Product, Sum},
-    ops::Add,
-};
+use core::{fmt::Debug, iter::Sum, ops::Add};
 
-use parity_scale_codec::{Decode, Encode};
+use parity_scale_codec::{Decode, Encode, EncodeLike};
 
 use super::{
     algebra::Field,
     comp::{Basic, ParityCmp},
-    curve::Affine,
+    curve::CurveAffine,
     sign::SigUtils,
-    Curve, CurveExtended, FftField, Group, Projective, TwistedEdwardsAffine, TwistedEdwardsCurve,
-    TwistedEdwardsExtended, WeierstrassAffine,
+    FftField, Group, WeierstrassAffine, WeierstrassProjective,
 };
 
 /// extension field
@@ -22,7 +17,7 @@ pub trait ExtensionField: Field + Basic + ParityCmp {
 
 /// pairing function range field
 pub trait PairingRange: ExtensionField {
-    type G1Affine: Affine;
+    type G1Affine: CurveAffine;
     type G2Coeff: ParityCmp;
     type QuadraticField: ExtensionField;
     type Gt: Group + Debug;
@@ -40,11 +35,11 @@ pub trait PairingRange: ExtensionField {
 }
 
 /// G2 group pairing interface
-pub trait G2Pairing: Projective {
+pub trait G2Pairing: WeierstrassProjective {
     type PairingRange: PairingRange;
     type PairingCoeff: ParityCmp;
     type PairingRepr: ParityCmp;
-    type G2Affine: Affine;
+    type G2Affine: CurveAffine;
 
     fn double_eval(&mut self) -> Self::PairingCoeff;
 
@@ -53,7 +48,7 @@ pub trait G2Pairing: Projective {
 
 /// pairing abstraction
 pub trait Pairing:
-    Send + Sync + Clone + Debug + Eq + PartialEq + Default + Encode + Decode
+    Send + Sync + Clone + Copy + Debug + Eq + PartialEq + Ord + Default + Encode + Decode
 {
     // g1 group affine point
     type G1Affine: WeierstrassAffine<
@@ -80,18 +75,19 @@ pub trait Pairing:
         + Encode
         + Decode;
     // g1 group projective point
-    type G1Projective: Projective<
+    type G1Projective: WeierstrassProjective<
             Affine = Self::G1Affine,
             Extended = Self::G1Projective,
             Scalar = Self::ScalarField,
         > + From<Self::G1Affine>
+        + Copy
         + Sum
         + Send
         + Sync
         + PartialEq
         + Eq;
     // g2 group projective point
-    type G2Projective: Projective<
+    type G2Projective: WeierstrassProjective<
             Affine = Self::G2Affine,
             Extended = Self::G2Projective,
             Scalar = Self::ScalarField,
@@ -99,44 +95,16 @@ pub trait Pairing:
         + G2Pairing
         + PartialEq
         + Eq;
-    // Jubjub affine point
-    type JubjubAffine: TwistedEdwardsAffine<
-            Affine = Self::JubjubAffine,
-            Extended = Self::JubjubExtended,
-            Scalar = Self::ScalarField,
-        > + PartialEq
-        + Eq;
-
-    // Jubjub extend point
-    type JubjubExtended: CurveExtended<
-            Affine = Self::JubjubAffine,
-            Extended = Self::JubjubExtended,
-            Scalar = Self::ScalarField,
-        > + TwistedEdwardsExtended
-        + TwistedEdwardsCurve
-        + PartialEq
-        + Eq;
 
     // g2 pairing representation
-    type G2PairngRepr: From<Self::G2Affine> + ParityCmp + Debug + Eq + PartialEq + Clone;
+    type G2PairngRepr: From<Self::G2Affine> + ParityCmp + Debug + Eq + PartialEq + Clone + Default;
     // range of pairing function
     type PairingRange: PairingRange + Debug + Eq + PartialEq;
     type Gt: Group + Debug + Eq + PartialEq;
     // Used for commitment
-    type ScalarField: FftField
-        + Sum
-        + Product
-        + From<<Self::JubjubExtended as Curve>::Range>
-        + From<<Self::JubjubAffine as Curve>::Range>
-        + Into<<Self::JubjubExtended as Curve>::Range>
-        + Into<<Self::JubjubAffine as Curve>::Range>
-        + Encode
-        + Decode
-        + Eq
-        + PartialEq
-        + SigUtils<32>;
-    type JubjubScalar: FftField + Into<Self::ScalarField> + Eq + PartialEq + SigUtils<32>;
+    type ScalarField: FftField + Eq + PartialEq + EncodeLike + Decode + SigUtils<32> + Sum;
 
+    const PARAM_D: Self::ScalarField;
     const X: u64;
     const X_IS_NEGATIVE: bool;
 

@@ -5,7 +5,7 @@ authors = [
 ]
 name = "zkstd"
 description = 'zero knowledge proof standard library'
-version = "0.0.12"
+version = "0.0.22"
 edition = "2021"
 license = "Apache-2.0"
 homepage = 'https://github.com/KogarashiNetwork/Kogarashi/'
@@ -23,11 +23,11 @@ paste = "1.0.11"
 rand_core = { version="0.6.4", default-features = false }
 sp-std = { version = '3.0.0', default-features = false }
 parity-scale-codec = { version = "2.0.0", default-features = false, features = ["derive"] }
+serde = { version = "1.0.102", default-features = false, features = ["derive"] }
 
 [dev-dependencies]
-jub-jub = { version = '0.0.14', default-features = false }
-bls-12-381 = { version = '0.0.12', default-features = false }
-serde = { version = "1.0.102", default-features = false, features = ["derive"] }
+jub-jub = { version = "0.0.20", default-features = false }
+bls-12-381 = { version = "0.0.23", default-features = false }
 
 [[test]]
 name = "arithmetics"
